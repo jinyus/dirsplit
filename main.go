@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	//use float to allow specifying sizes > 1GB
+	//use float to allow specifying sizes < 1GB
 	var maxSize float64
 	var folder string
 	flag.Float64Var(&maxSize, "max", 5, "Max folder size in GB")
@@ -86,7 +86,7 @@ func confirmOperation(desc string) {
 		fmt.Printf("invalid answer : expected (y or n) got (%s)\n", answer)
 		os.Exit(1)
 	} else if answer != "y" {
-		log.Println("Goodbye!")
+		fmt.Println("Goodbye!")
 		os.Exit(1)
 	}
 }

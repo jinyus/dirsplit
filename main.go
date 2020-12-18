@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/karrick/godirwalk"
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 func main() {
@@ -28,43 +28,42 @@ func main() {
 
 	maxFileSize := maxSize * GBMultiple
 
-	err := godirwalk.Walk(folder, &godirwalk.Options{
-		Callback: func(osPathname string, de *godirwalk.Dirent) error {
-			if !de.IsRegular() && osPathname != folder {
-				return godirwalk.SkipThis
-			} else if folder == osPathname {
-				return nil
-			}
+	err := filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			fmt.Printf("could not access file : %q: %v\n", path, err)
+			return err
+		}
 
-			fileSize, err := getFileSize(osPathname)
-			if err != nil {
-				fmt.Printf("could not get file size : %v\n", err)
-			}
-
-			decrementIfFailed := false
-			if tracker[currentPart]+fileSize > maxFileSize && tracker[currentPart] > 0 {
-				currentPart++
-				decrementIfFailed = true
-			}
-			tracker[currentPart] += fileSize
-
-			err = moveFile(osPathname, de.Name(), folder, currentPart)
-			if err != nil {
-				fmt.Printf("could not move file : %v\n", err)
-				tracker[currentPart] -= fileSize
-				if decrementIfFailed {
-					currentPart--
-				}
-
-			}
-			filesMoved++
+		if info.IsDir() && path != folder {
+			// only proccess files in target folder. ie: depth of 1
+			return filepath.SkipDir
+		} else if path == folder {
 			return nil
-		},
-		ErrorCallback: func(osPathname string, err error) godirwalk.ErrorAction {
-			_, _ = fmt.Fprintf(os.Stderr, "ERROR: %s\n", err)
-			return godirwalk.SkipNode
-		},
-		Unsorted: true,
+		}
+
+		fileSize, err := getFileSize(path)
+		if err != nil {
+			fmt.Printf("could not get file size : %v\n", err)
+		}
+
+		decrementIfFailed := false
+		if tracker[currentPart]+fileSize > maxFileSize && tracker[currentPart] > 0 {
+			currentPart++
+			decrementIfFailed = true
+		}
+		tracker[currentPart] += fileSize
+
+		err = moveFile(path, info.Name(), folder, currentPart)
+		if err != nil {
+			fmt.Printf("could not move file : %v\n", err)
+			tracker[currentPart] -= fileSize
+			if decrementIfFailed {
+				currentPart--
+			}
+
+		}
+		filesMoved++
+		return nil
 	})
 
 	if err != nil {

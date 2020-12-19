@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -67,7 +66,8 @@ func main() {
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 	if filesMoved == 0 {
 		currentPart = 0

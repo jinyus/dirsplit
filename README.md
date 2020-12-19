@@ -17,7 +17,7 @@ Usage of dirsplitter:
 ```
 example:
 
-dirsplitter -dir ./mylarge8GBdirectory -m 2
+dirsplitter -dir ./mylarge8GBdirectory -max 2
 
 This will yield the following directory structure:
 

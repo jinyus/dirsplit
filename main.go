@@ -78,7 +78,7 @@ func main() {
 	}
 	fmt.Printf("Success:\nParts created: %d\nFiles moved: %d\n", currentPart, filesMoved)
 
-	if currentPart > 0 {
+	if currentPart > 0 && showTarCommand {
 		if currentPart == 1 {
 			fmt.Printf(`Tar Command : tar -cf "%s.part1.tar" "part1"; done`, outPrefix)
 		} else {

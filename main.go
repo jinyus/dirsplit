@@ -28,6 +28,7 @@ func main() {
 	tracker := map[int]float64{}
 	currentPart := 1
 	filesMoved := 0
+	failedOps := 0
 
 	maxFileSize := maxSize * GBMultiple
 
@@ -60,6 +61,7 @@ func main() {
 		if err != nil {
 			fmt.Printf("could not move file : %v\n", err)
 			tracker[currentPart] -= fileSize
+			failedOps++
 			if decrementIfFailed {
 				currentPart--
 			}
@@ -76,7 +78,7 @@ func main() {
 	if filesMoved == 0 {
 		currentPart = 0
 	}
-	fmt.Printf("Success:\nParts created: %d\nFiles moved: %d\n", currentPart, filesMoved)
+	fmt.Printf("Done:\nParts created: %d\nFiles moved: %d\nFailed Operations: %d\n", currentPart, filesMoved, failedOps)
 
 	if currentPart > 0 && showTarCommand {
 		if currentPart == 1 {

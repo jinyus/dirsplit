@@ -12,13 +12,17 @@ func main() {
 	//use float to allow specifying sizes < 1GB
 	var maxSize float64
 	var dir string
+	var showTarCommand bool
+	var outPrefix string
 	flag.Float64Var(&maxSize, "max", 5, "Max part size in GB")
 	flag.StringVar(&dir, "dir", ".", "Target directory")
+	flag.BoolVar(&showTarCommand, "show-cmd", false, "Show tar command to compress each directory")
+	flag.StringVar(&outPrefix, "out-prefix", "", "Prefix for output files of the tar command. -show-cmd must be specified. eg: myprefix.part1.tar")
 
 	flag.Parse()
 
 	confirmOperation(fmt.Sprintf(`Splitting "%s" into %.3fGB parts.`, dir, maxSize))
-	fmt.Printf("Slitting Directory\n\n")
+	fmt.Printf("Splitting Directory\n\n")
 
 	const GBMultiple = 1024 * 1024 * 1024
 	tracker := map[int]float64{}
@@ -73,6 +77,14 @@ func main() {
 		currentPart = 0
 	}
 	fmt.Printf("Success:\nParts created: %d\nFiles moved: %d\n", currentPart, filesMoved)
+
+	if currentPart > 0 {
+		if currentPart == 1 {
+			fmt.Printf(`Tar Command : tar -cf "%s.part1.tar" "part1"; done`, outPrefix)
+		} else {
+			fmt.Printf(`Tar Command : for n in {1..%d}; do tar -cf "%s.part$n.tar" "part$n"; done`, currentPart, outPrefix)
+		}
+	}
 
 }
 

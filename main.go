@@ -12,13 +12,13 @@ import (
 func main() {
 	//use float to allow specifying sizes < 1GB
 	var maxSize float64
-	var folder string
-	flag.Float64Var(&maxSize, "max", 5, "Max folder size in GB")
-	flag.StringVar(&folder, "folder", ".", "Target folder")
+	var dir string
+	flag.Float64Var(&maxSize, "max", 5, "Max part size in GB")
+	flag.StringVar(&dir, "dir", ".", "Target directory")
 
 	flag.Parse()
 
-	confirmOperation(fmt.Sprintf(`Splitting "%s" into %.3fGB parts.`, folder, maxSize))
+	confirmOperation(fmt.Sprintf(`Splitting "%s" into %.3fGB parts.`, dir, maxSize))
 	fmt.Printf("Slitting Directory\n\n")
 
 	const GBMultiple = 1024 * 1024 * 1024
@@ -28,16 +28,16 @@ func main() {
 
 	maxFileSize := maxSize * GBMultiple
 
-	err := filepath.Walk(folder, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			fmt.Printf("could not access file : %q: %v\n", path, err)
 			return err
 		}
 
-		if info.IsDir() && path != folder {
-			// only proccess files in target folder. ie: depth of 1
+		if info.IsDir() && path != dir {
+			// only proccess files in target dir. ie: depth of 1
 			return filepath.SkipDir
-		} else if path == folder {
+		} else if path == dir {
 			return nil
 		}
 
@@ -53,7 +53,7 @@ func main() {
 		}
 		tracker[currentPart] += fileSize
 
-		err = moveFile(path, info.Name(), folder, currentPart)
+		err = moveFile(path, info.Name(), dir, currentPart)
 		if err != nil {
 			fmt.Printf("could not move file : %v\n", err)
 			tracker[currentPart] -= fileSize
@@ -99,9 +99,9 @@ func getFileSize(filename string) (float64, error) {
 	return float64(fi.Size()), nil
 }
 
-func moveFile(fullPath, filename, dstFolder string, part int) error {
-	partFolder := fmt.Sprintf("part%d", part)
-	_ = os.Mkdir(path.Join(dstFolder, partFolder), os.ModePerm)
-	finalDst := path.Join(dstFolder, partFolder, filename)
+func moveFile(fullPath, filename, dstDir string, part int) error {
+	partDir := fmt.Sprintf("part%d", part)
+	_ = os.Mkdir(path.Join(dstDir, partDir), os.ModePerm)
+	finalDst := path.Join(dstDir, partDir, filename)
 	return os.Rename(fullPath, finalDst)
 }

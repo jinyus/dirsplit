@@ -1,6 +1,8 @@
 # dirsplitter
 Split large directories into parts of a specified maximum size
 
+Check out my nim port for 80% smaller binary: https://github.com/jinyus/nim_dirsplitter
+
 How to build:  
 -Clone this git repo  
 -cd into directory and run "go build" or "go install" to add executable to your path

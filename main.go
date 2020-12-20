@@ -47,7 +47,7 @@ func main() {
 		}
 
 		if info.IsDir() && path != dir {
-			// only proccess files in target dir. ie: depth of 1
+			// only process files in target dir. ie: depth of 1
 			return filepath.SkipDir
 		} else if path == dir {
 			return nil

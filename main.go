@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	cop "github.com/jinyus/confirmop"
 	"os"
 	"path"
 	"path/filepath"
@@ -21,8 +22,15 @@ func main() {
 
 	flag.Parse()
 
-	confirmOperation(fmt.Sprintf(`Splitting "%s" into %.3fGB parts.`, dir, maxSize))
+	userChoice := cop.ConfirmOperation(fmt.Sprintf(`Splitting "%s" into %.3fGB parts.`, dir, maxSize), "continue", false)
+
+	if !userChoice {
+		os.Exit(0)
+	}
 	fmt.Printf("Splitting Directory\n\n")
+	if outPrefix != "" {
+		outPrefix += "."
+	}
 
 	const GBMultiple = 1024 * 1024 * 1024
 	tracker := map[int]float64{}
@@ -82,27 +90,12 @@ func main() {
 
 	if currentPart > 0 && showTarCommand {
 		if currentPart == 1 {
-			fmt.Printf(`Tar Command : tar -cf "%s.part1.tar" "part1"; done`, outPrefix)
+			fmt.Printf(`Tar Command : tar -cf "%spart1.tar" "part1"; done`, outPrefix)
 		} else {
-			fmt.Printf(`Tar Command : for n in {1..%d}; do tar -cf "%s.part$n.tar" "part$n"; done`, currentPart, outPrefix)
+			fmt.Printf(`Tar Command : for n in {1..%d}; do tar -cf "%spart$n.tar" "part$n"; done`, currentPart, outPrefix)
 		}
 	}
 
-}
-
-func confirmOperation(desc string) {
-	var answer string
-	fmt.Printf("%s \nconfirm? (y/n): ", desc)
-	if _, err := fmt.Scanf("%s", &answer); err != nil {
-		fmt.Printf("invalid answer : expected (y or n) got (%s) :\n%v", answer, err)
-		os.Exit(1)
-	} else if answer != "y" && answer != "n" {
-		fmt.Printf("invalid answer : expected (y or n) got (%s)\n", answer)
-		os.Exit(1)
-	} else if answer != "y" {
-		fmt.Println("Goodbye!")
-		os.Exit(1)
-	}
 }
 
 func getFileSize(filename string) (float64, error) {
